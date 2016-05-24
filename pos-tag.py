@@ -1,4 +1,5 @@
 import random
+import sys
 
 class BiGram:
 
@@ -31,22 +32,33 @@ class BiGram:
             #Inner Map
             for word_succeed, count in values.iteritems():
                 #Normalize counts & cast to floats
-                count = float(count) / float(len(values))
+                count = float(count) / float(sum(values.itervalues()))
                 values[word_succeed] = count   
 
     def generate_given(self, keyword, length):
+        sys.stdout.write(keyword + " ")
         if keyword in self.wordMap:
             while(length > 0):
                 ran = random.random()
                 #Still need to use random variable to select next word. Currently just grabs the next word in map.
-                next_word = self.wordMap[keyword].iterkeys().next()
+                next_word = self.WeightedPick(self.wordMap[keyword])
                 keyword = next_word
-                print keyword
+                sys.stdout.write(keyword + " ")
                 length -= 1
+                if length % 10 == 0:
+                    sys.stdout.write("\n")
+
+    def WeightedPick(self, d):
+        r = random.uniform(0, sum(d.itervalues()))
+        s = 0.0
+        for k, w in d.iteritems():
+            s += w
+            if r < s: return k
+        return k
 
 if __name__ == '__main__':
     # Initialize GUI
     source = "training_dataset_small.txt"
     biGram = BiGram(source)
-    biGram.normalize_word_map()
-    biGram.generate_given("In", 10)
+    #biGram.normalize_word_map()
+    biGram.generate_given("In", 50)
