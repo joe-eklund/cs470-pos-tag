@@ -1,0 +1,8 @@
+In_IN an_DT Oct._NNP 19_CD review_NN of_IN ``_`` The_DT Misanthrope_NN ''_'' at_IN Chicago_NNP 's_POS Goodman_NNP Theatre_NNP -LRB-_-LRB- ``_`` Revitalized_VBN Classics_NNS Take_VBP the_DT Stage_NN in_IN Windy_NNP City_NNP ,_, ''_'' Leisure_NN &_CC Arts_NNS -RRB-_-RRB- ,_, the_DT role_NN of_IN Celimene_NNP ,_, played_VBN by_IN Kim_NNP Cattrall_NNP ,_, was_VBD mistakenly_RB attributed_VBN to_TO Christina_NNP Haag_NNP ._.
+Ms._NNP Haag_NNP plays_VBZ Elianti_NNP ._.
+Rolls-Royce_NNP Motor_NNP Cars_NNPS Inc._NNP said_VBD it_PRP expects_VBZ its_PRP$ U.S._NNP sales_NNS to_TO remain_VB steady_JJ at_IN about_IN 1,200_CD cars_NNS in_IN 1990_CD ._.
+The_DT luxury_NN auto_NN maker_NN last_JJ year_NN sold_VBD 1,214_CD cars_NNS in_IN the_DT U.S._NNP
+Howard_NNP Mosher_NNP ,_, president_NN and_CC chief_JJ executive_NN officer_NN ,_, said_VBD he_PRP anticipates_VBZ growth_NN for_IN the_DT luxury_NN auto_NN maker_NN in_IN Britain_NNP and_CC Europe_NNP ,_, and_CC in_IN Far_JJ Eastern_JJ markets_NNS ._.
+BELL_NNP INDUSTRIES_NNP Inc._NNP increased_VBD its_PRP$ quarterly_NN to_TO 10_CD cents_NNS from_IN seven_CD cents_NNS a_DT share_NN ._.
+The_DT new_JJ rate_NN will_MD be_VB payable_JJ Feb._NNP 15_CD ._.
+A_DT record_NN date_NN has_VBZ n't_RB been_VBN set_VBN ._.

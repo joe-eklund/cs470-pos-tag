@@ -11,7 +11,6 @@ class BiGram:
             for line in f:
                 for word in line.split():
                     current = word.rpartition('_')[0]
-                    #print current
                     if previous is not None:
                         if previous in self.wordMap.keys() is not None:
                             if current in self.wordMap[previous].keys() is not None:
@@ -36,11 +35,18 @@ class BiGram:
                 values[word_succeed] = count   
 
     def generate_given(self, keyword, length):
-        print "TODO"
+        if keyword in self.wordMap:
+            while(length > 0):
+                ran = random.random()
+                #Still need to use random variable to select next word. Currently just grabs the next word in map.
+                next_word = self.wordMap[keyword].iterkeys().next()
+                keyword = next_word
+                print keyword
+                length -= 1
 
 if __name__ == '__main__':
     # Initialize GUI
     source = "training_dataset_small.txt"
     biGram = BiGram(source)
     biGram.normalize_word_map()
-    biGram.generate_given("hello", 10)
+    biGram.generate_given("In", 10)
