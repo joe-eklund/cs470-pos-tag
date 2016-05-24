@@ -39,14 +39,14 @@ class BiGram:
             while(length > 0):
                 ran = random.random()
                 #Still need to use random variable to select next word. Currently just grabs the next word in map.
-                next_word = self.WeightedPick(self.wordMap[keyword])
+                next_word = self.weighted_pick(self.wordMap[keyword])
                 keyword = next_word
                 sys.stdout.write(keyword + " ")
                 length -= 1
                 if length % 10 == 0:
                     sys.stdout.write("\n")
 
-    def WeightedPick(self, d):
+    def weighted_pick(self, d):
         r = random.uniform(0, sum(d.itervalues()))
         s = 0.0
         for k, w in d.iteritems():
