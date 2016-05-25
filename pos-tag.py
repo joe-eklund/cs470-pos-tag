@@ -227,7 +227,7 @@ if __name__ == '__main__':
                 else:
                     words[-1].append('.')
                     words.append([])
-    if words[-1] == []:
+    if len(words[-1]) == 0:
         words.pop()
 
     for sentence in words:
