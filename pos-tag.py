@@ -65,6 +65,7 @@ class HMM:
               'NNPS', 'NNS', 'PDT', 'POS', 'PRP', 'PRP$', 'RB', 'RBR', 'RBS',
               'RP', '-RRB-', 'SYM', 'TO', 'UH', 'VB', 'VBD', 'VBG', 'VBN', 'VBP',
               'VBZ', 'WDT', 'WP', 'WP$', 'WRB']
+    min_prob = 1
     debug = True
 
     # Initialize HMM
@@ -121,6 +122,22 @@ class HMM:
             with open(datafile, 'w') as outfile:
                 json.dump(self.maps, outfile)
 
+        # Find min_prob
+        for key, values in self.maps['typeMap'].iteritems():
+            # Inner Map
+            for type_succeed, count in values.iteritems():
+                if values[type_succeed] < self.min_prob:
+                    self.min_prob = values[type_succeed]
+
+        # Find min_prob
+        for key, values in self.maps['wordMap'].iteritems():
+            # Inner Map
+            for type_succeed, count in values.iteritems():
+                if values[type_succeed] < self.min_prob:
+                    self.min_prob = values[type_succeed]
+
+        self.min_prob /= 10
+
     # Generate text using the map
     def generate_given(self, keyword, word_type, length):
         sys.stdout.write(keyword + " ")
@@ -152,7 +169,7 @@ class HMM:
                 if obs[0] in self.maps['wordMap'][st].keys() is not None:
                     V[0][st] = {"prob": self.maps['wordMap'][st][obs[0]], "prev": None}
                 else:
-                    V[0][st] = {"prob": 1, "prev": None}
+                    V[0][st] = {"prob": self.min_prob, "prev": None}
         # Run Viterbi when t > 0
         for t in range(1, len(obs)):
             V.append({})
@@ -171,7 +188,7 @@ class HMM:
                                     max_prob = max_tr_prob * self.maps['wordMap'][st][obs[t]]
                                     V[t][st] = {"prob": max_prob, "prev": prev_st}
                                 else:
-                                    V[t][st] = {"prob": max_tr_prob, "prev": prev_st}
+                                    V[t][st] = {"prob": max_tr_prob * self.min_prob, "prev": prev_st}
                                 break
         opt = []
         # The highest probability
