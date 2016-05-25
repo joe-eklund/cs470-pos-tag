@@ -235,10 +235,10 @@ class HMM:
             for j in range(len(words[i])):
                 if generated_tags[j] != tags[i][j]:
                     error += 1
-            current_error = float(error) / float(total)
+            current_error = float(error) / float(total) * 100
             print "Current Error: ", current_error, "%"
 
-        error = float(error)/float(total)
+        error = float(error)/float(total) * 100
         print "Error: ", error, "%"
         return error
 
@@ -252,8 +252,8 @@ if __name__ == '__main__':
     print ""
     print "HMM:"
     hmm = HMM(source)
-    #hmm.generate_given("In", "IN", 50)
-    #hmm.pos_label("2009-Obama.txt")
-    hmm.test_error("training_dataset_small.txt")
+    # hmm.generate_given("In", "IN", 50)
+    # hmm.pos_label("2009-Obama.txt")
+    # hmm.test_error("training_dataset_small.txt")
     # hmm.test_error("training_dataset.txt")
-    # hmm.test_error("testing_dataset.txt")
+    hmm.test_error("testing_dataset.txt")
