@@ -115,7 +115,7 @@ class HMM:
                 # Inner Map
                 for word_succeed, count in values.iteritems():
                     # Normalize counts & cast to floats
-                    count = (float(count) / total) * 100
+                    count = float(count) / total
                     values[word_succeed] = count
 
             with open(datafile, 'w') as outfile:
