@@ -76,7 +76,13 @@ class HMM:
             with open(datafile, 'r') as infile:
                 self.maps = json.load(infile)
         else:
-            previous = None
+            # Initialize maps
+            for label in self.labels:
+                self.maps['wordMap'][label] = {}
+                self.maps['typeMap'][label] = {}
+                for label2 in self.labels:
+                    self.maps['typeMap'][label][label2] = 0
+
             prev_type = None
             with open(source, 'r') as f:
                 for line in f:
@@ -84,40 +90,33 @@ class HMM:
                         current = word.rpartition('_')[0]
                         cur_type = word.rpartition('_')[2]
                         if prev_type is not None:
-                            if prev_type in self.maps['typeMap'].keys() is not None:
-                                if cur_type in self.maps['typeMap'][prev_type].keys() is not None:
-                                    self.maps['typeMap'][prev_type][cur_type] += 1
-                                else:
-                                    self.maps['typeMap'][prev_type][cur_type] = 1
-                            else:
-                                self.maps['typeMap'][prev_type] = {cur_type : 1}
+                            self.maps['typeMap'][prev_type][cur_type] += 1
 
-                            if cur_type in self.maps['wordMap'].keys() is not None:
-                                if current in self.maps['wordMap'][cur_type].keys() is not None:
-                                    self.maps['wordMap'][cur_type][current] += 1
-                                else:
-                                    self.maps['wordMap'][cur_type][current] = 1
+                            if current in self.maps['wordMap'][cur_type].keys() is not None:
+                                self.maps['wordMap'][cur_type][current] += 1
                             else:
-                                self.maps['wordMap'][cur_type] = {current : 1}
+                                self.maps['wordMap'][cur_type][current] = 1
                         prev_type = cur_type
 
             # Normalize type map
             for key, values in self.maps['typeMap'].iteritems():
                 total = sum(values.itervalues())
-                # Inner Map
-                for type_succeed, count in values.iteritems():
-                    # Normalize counts & cast to floats
-                    count = float(count) / total
-                    values[type_succeed] = count
+                if total > 0:
+                    # Inner Map
+                    for type_succeed, count in values.iteritems():
+                        # Normalize counts & cast to floats
+                        count = float(count) / total
+                        values[type_succeed] = count
 
             # Normalize word map
             for key, values in self.maps['wordMap'].iteritems():
                 total = sum(values.itervalues())
-                # Inner Map
-                for word_succeed, count in values.iteritems():
-                    # Normalize counts & cast to floats
-                    count = float(count) / total
-                    values[word_succeed] = count
+                if total > 0:
+                    # Inner Map
+                    for type_succeed, count in values.iteritems():
+                        # Normalize counts & cast to floats
+                        count = float(count) / total
+                        values[type_succeed] = count
 
             with open(datafile, 'w') as outfile:
                 json.dump(self.maps, outfile)
@@ -160,31 +159,25 @@ class HMM:
     def viterbi_label(self, obs):
         V = [{}]
         for st in self.labels:
-            if st in self.maps['wordMap'].keys() is not None:
-                if obs[0] in self.maps['wordMap'][st].keys() is not None:
-                    V[0][st] = {"prob": self.maps['wordMap'][st][obs[0]], "prev": None}
-                else:
-                    V[0][st] = {"prob": self.min_prob, "prev": None}
+            if obs[0] in self.maps['wordMap'][st].keys() is not None:
+                V[0][st] = {"prob": self.maps['wordMap'][st][obs[0]], "prev": None}
+            else:
+                V[0][st] = {"prob": self.min_prob, "prev": None}
         # Run Viterbi when t > 0
         for t in range(1, len(obs)):
             V.append({})
             for st in self.labels:
                 max_tr_prob = 0
                 for prev_st in self.labels:
-                    if(prev_st in V[t - 1].keys() is not None and prev_st in self.maps['typeMap'].keys() is not None and
-                            st in self.maps['typeMap'][prev_st].keys() is not None):
-                        max_tr_prob = max(max_tr_prob, V[t - 1][prev_st]["prob"] * self.maps['typeMap'][prev_st][st])
+                    max_tr_prob = max(max_tr_prob, V[t - 1][prev_st]["prob"] * self.maps['typeMap'][prev_st][st])
                 for prev_st in self.labels:
-                    if (prev_st in V[t - 1].keys() is not None and prev_st in self.maps['typeMap'].keys() is not None and
-                            st in self.maps['typeMap'][prev_st].keys() is not None):
-                        if V[t - 1][prev_st]["prob"] * self.maps['typeMap'][prev_st][st] == max_tr_prob:
-                            if st in self.maps['wordMap'].keys() is not None:
-                                if obs[t] in self.maps['wordMap'][st].keys() is not None:
-                                    max_prob = max_tr_prob * self.maps['wordMap'][st][obs[t]]
-                                    V[t][st] = {"prob": max_prob, "prev": prev_st}
-                                else:
-                                    V[t][st] = {"prob": max_tr_prob * self.min_prob, "prev": prev_st}
-                                break
+                    if V[t - 1][prev_st]["prob"] * self.maps['typeMap'][prev_st][st] == max_tr_prob:
+                        if obs[t] in self.maps['wordMap'][st].keys() is not None:
+                            max_prob = max_tr_prob * self.maps['wordMap'][st][obs[t]]
+                            V[t][st] = {"prob": max_prob, "prev": prev_st}
+                        else:
+                            V[t][st] = {"prob": max_tr_prob * self.min_prob, "prev": prev_st}
+                        break
         opt = []
         # The highest probability
         max_prob = max(value["prob"] for value in V[-1].values())
