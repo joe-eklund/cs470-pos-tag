@@ -60,6 +60,11 @@ class BiGram:
 class HMM:
 
     maps = {'typeMap' : {}, 'wordMap' : {}}
+    labels = ['$', '``', '"', '(', ')', ',', '--', '.', ':', 'CC', 'CD', 'DT',
+              'EX', 'FW', 'IN', 'JJ', 'JJR', 'JJS', 'LS', 'MD', 'NN', 'NNP',
+              'NNPS', 'NNS', 'PDT', 'POS', 'PRP', 'PRP$', 'RB', 'RBR', 'RBS',
+              'RP', 'SYM', 'TO', 'UH', 'VB', 'VBD', 'VBG', 'VBN', 'VBP',
+              'VBZ', 'WDT', 'WP', 'WP$', 'WRB']
     debug = True
 
     # Initialize HMM
@@ -95,6 +100,24 @@ class HMM:
                                 self.maps['wordMap'][cur_type] = {current : 1}
                         prev_type = cur_type
 
+            # Normalize type map
+            for key, values in self.maps['typeMap'].iteritems():
+                total = sum(values.itervalues())
+                # Inner Map
+                for type_succeed, count in values.iteritems():
+                    # Normalize counts & cast to floats
+                    count = float(count) / total
+                    values[type_succeed] = count
+
+            # Normalize word map
+            for key, values in self.maps['wordMap'].iteritems():
+                total = sum(values.itervalues())
+                # Inner Map
+                for word_succeed, count in values.iteritems():
+                    # Normalize counts & cast to floats
+                    count = (float(count) / total) * 100
+                    values[word_succeed] = count
+
             with open(datafile, 'w') as outfile:
                 json.dump(self.maps, outfile)
 
@@ -121,6 +144,48 @@ class HMM:
             if r < s: return k
         return k
 
+    # Assigns a label to each observed word using the viterbi algorithm
+    def viterbi_label(self, obs):
+        V = [{}]
+        for st in self.labels:
+            if st in self.maps['wordMap'].keys() is not None and obs[0] in self.maps['wordMap'][st].keys() is not None:
+                V[0][st] = {"prob": self.maps['wordMap'][st][obs[0]], "prev": None}
+        # Run Viterbi when t > 0
+        for t in range(1, len(obs)):
+            V.append({})
+            for st in self.labels:
+                max_tr_prob = 0
+                for prev_st in self.labels:
+                    if(prev_st in V[t - 1].keys() is not None and prev_st in self.maps['typeMap'].keys() is not None and
+                            st in self.maps['typeMap'][prev_st].keys() is not None):
+                        max_tr_prob = max(max_tr_prob, V[t - 1][prev_st]["prob"] * self.maps['typeMap'][prev_st][st])
+                for prev_st in self.labels:
+                    if (prev_st in V[t - 1].keys() is not None and prev_st in self.maps['typeMap'].keys() is not None and
+                            st in self.maps['typeMap'][prev_st].keys() is not None):
+                        if V[t - 1][prev_st]["prob"] * self.maps['typeMap'][prev_st][st] == max_tr_prob:
+                            if st in self.maps['wordMap'].keys() is not None:
+                                if obs[t] in self.maps['wordMap'][st].keys() is not None:
+                                    max_prob = max_tr_prob * self.maps['wordMap'][st][obs[t]]
+                                    V[t][st] = {"prob": max_prob, "prev": prev_st}
+                                else:
+                                    V[t][st] = {"prob": max_tr_prob, "prev": prev_st}
+                                break
+        opt = []
+        # The highest probability
+        max_prob = max(value["prob"] for value in V[-1].values())
+        previous = None
+        # Get most probable state and its backtrack
+        for st, data in V[-1].items():
+            if data["prob"] == max_prob:
+                opt.append(st)
+                previous = st
+                break
+        # Follow the backtrack till the first observation
+        for t in range(len(V) - 2, -1, -1):
+            opt.insert(0, V[t + 1][previous]["prev"])
+            previous = V[t + 1][previous]["prev"]
+        print 'The steps of states are ' + ' '.join(opt) + ' with highest probability of %s' % max_prob
+
 
 if __name__ == '__main__':
     source = "training_dataset.txt"
@@ -131,4 +196,11 @@ if __name__ == '__main__':
     print ""
     print "HMM:"
     hmm = HMM(source)
-    hmm.generate_given("In", "IN", 50)
+    #hmm.generate_given("In", "IN", 50)
+    words = []
+    with open("2009-Obama.txt", 'r') as f:
+        for line in f:
+            for word in line.split():
+                words.append(word)
+    hmm.viterbi_label(words)
+    #hmm.viterbi_label(['This', 'is', 'a', 'test', '.'])
