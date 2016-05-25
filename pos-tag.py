@@ -60,10 +60,10 @@ class BiGram:
 class HMM:
 
     maps = {'typeMap' : {}, 'wordMap' : {}}
-    labels = ['$', '``', '"', '(', ')', ',', '--', '.', ':', 'CC', 'CD', 'DT',
-              'EX', 'FW', 'IN', 'JJ', 'JJR', 'JJS', 'LS', 'MD', 'NN', 'NNP',
+    labels = ['#', '$', '``', "''", '(', ')', ',', '--', '.', ':', 'CC', 'CD', 'DT',
+              'EX', 'FW', 'IN', 'JJ', 'JJR', 'JJS', '-LRB-', 'LS', 'MD', 'NN', 'NNP',
               'NNPS', 'NNS', 'PDT', 'POS', 'PRP', 'PRP$', 'RB', 'RBR', 'RBS',
-              'RP', 'SYM', 'TO', 'UH', 'VB', 'VBD', 'VBG', 'VBN', 'VBP',
+              'RP', '-RRB-', 'SYM', 'TO', 'UH', 'VB', 'VBD', 'VBG', 'VBN', 'VBP',
               'VBZ', 'WDT', 'WP', 'WP$', 'WRB']
     debug = True
 
@@ -148,8 +148,11 @@ class HMM:
     def viterbi_label(self, obs):
         V = [{}]
         for st in self.labels:
-            if st in self.maps['wordMap'].keys() is not None and obs[0] in self.maps['wordMap'][st].keys() is not None:
-                V[0][st] = {"prob": self.maps['wordMap'][st][obs[0]], "prev": None}
+            if st in self.maps['wordMap'].keys() is not None:
+                if obs[0] in self.maps['wordMap'][st].keys() is not None:
+                    V[0][st] = {"prob": self.maps['wordMap'][st][obs[0]], "prev": None}
+                else:
+                    V[0][st] = {"prob": 1, "prev": None}
         # Run Viterbi when t > 0
         for t in range(1, len(obs)):
             V.append({})
@@ -197,13 +200,19 @@ if __name__ == '__main__':
     print "HMM:"
     hmm = HMM(source)
     #hmm.generate_given("In", "IN", 50)
+
     words = [[]]
     with open("2009-Obama.txt", 'r') as f:
         for line in f:
             for word in line.split():
-                if word != ".":
+                if word != '.':
                     words[-1].append(word)
                 else:
+                    words[-1].append('.')
                     words.append([])
+    if words[-1] == []:
+        words.pop()
+
     for sentence in words:
+        print sentence
         hmm.viterbi_label(sentence)
