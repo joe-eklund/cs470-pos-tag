@@ -197,10 +197,13 @@ if __name__ == '__main__':
     print "HMM:"
     hmm = HMM(source)
     #hmm.generate_given("In", "IN", 50)
-    words = []
+    words = [[]]
     with open("2009-Obama.txt", 'r') as f:
         for line in f:
             for word in line.split():
-                words.append(word)
-    hmm.viterbi_label(words)
-    #hmm.viterbi_label(['This', 'is', 'a', 'test', '.'])
+                if word != ".":
+                    words[-1].append(word)
+                else:
+                    words.append([])
+    for sentence in words:
+        hmm.viterbi_label(sentence)
