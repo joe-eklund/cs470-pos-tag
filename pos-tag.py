@@ -237,7 +237,7 @@ class HMM:
         total = 0
         for i in range(len(words)):
             total += len(words[i])
-            generated_tags = hmm.viterbi_label(words[i])
+            generated_tags = hmm.viterbi_label(words[i])[0]
             for j in range(len(words[i])):
                 if generated_tags[j] != tags[i][j]:
                     error += 1
