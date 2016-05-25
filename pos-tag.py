@@ -126,16 +126,11 @@ class HMM:
         for key, values in self.maps['typeMap'].iteritems():
             # Inner Map
             for type_succeed, count in values.iteritems():
-                if values[type_succeed] < self.min_prob:
-                    self.min_prob = values[type_succeed]
-
-        # Find min_prob
+                self.min_prob = min(self.min_prob, values[type_succeed])
         for key, values in self.maps['wordMap'].iteritems():
             # Inner Map
             for type_succeed, count in values.iteritems():
-                if values[type_succeed] < self.min_prob:
-                    self.min_prob = values[type_succeed]
-
+                self.min_prob = min(self.min_prob, values[type_succeed])
         self.min_prob /= 10
 
     # Generate text using the map
@@ -204,7 +199,52 @@ class HMM:
         for t in range(len(V) - 2, -1, -1):
             opt.insert(0, V[t + 1][previous]["prev"])
             previous = V[t + 1][previous]["prev"]
-        print 'The steps of states are ' + ' '.join(opt) + ' with highest probability of %s' % max_prob
+        return opt, max_prob
+
+    def pos_label(self, source):
+        words = [[]]
+        with open(source, 'r') as f:
+            for line in f:
+                for word in line.split():
+                    words[-1].append(word)
+                    if word == '.':
+                        words.append([])
+        if len(words[-1]) == 0:
+            words.pop()
+
+        for sentence in words:
+            print sentence
+            print hmm.viterbi_label(sentence)
+
+    def test_error(self, source):
+        words = [[]]
+        tags = [[]]
+        with open(source, 'r') as f:
+            for line in f:
+                for word_and_tag in line.split():
+                    word = word_and_tag.rpartition('_')[0]
+                    tag = word_and_tag.rpartition('_')[2]
+                    words[-1].append(word)
+                    tags[-1].append(tag)
+                    if word == '.':
+                        words.append([])
+                        tags.append([])
+        if len(words[-1]) == 0:
+            words.pop()
+            tags.pop()
+
+        error = 0
+        total = 0
+        for i in range(len(words)):
+            total += len(words[i])
+            generated_tags = hmm.viterbi_label(words[i])
+            for j in range(len(words[i])):
+                if generated_tags[j] != tags[i][j]:
+                    error += 1
+
+        error = float(error)/float(total)
+        print "Error: ", error, "%"
+        return error
 
 
 if __name__ == '__main__':
@@ -217,19 +257,6 @@ if __name__ == '__main__':
     print "HMM:"
     hmm = HMM(source)
     #hmm.generate_given("In", "IN", 50)
-
-    words = [[]]
-    with open("2009-Obama.txt", 'r') as f:
-        for line in f:
-            for word in line.split():
-                if word != '.':
-                    words[-1].append(word)
-                else:
-                    words[-1].append('.')
-                    words.append([])
-    if len(words[-1]) == 0:
-        words.pop()
-
-    for sentence in words:
-        print sentence
-        hmm.viterbi_label(sentence)
+    #hmm.pos_label("2009-Obama.txt")
+    hmm.test_error("training_dataset.txt")
+    #hmm.test_error("testing_dataset.txt")
